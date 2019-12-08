@@ -1,6 +1,6 @@
 import scala.io.Source
 
-object day01 {
+object Day01 {
     def main(args: Array[String]) {
 
         def computeFuel(n: Int): List[Int] = {
