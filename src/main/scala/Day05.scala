@@ -64,6 +64,8 @@ object Day05 {
       .split(",")
       .map((s: String) => s.toInt)
 
+    source.close()
+
     val part1: Array[Int] = runProgram(0, inputArray.clone)(1)
     val part2: Array[Int] = runProgram(0, inputArray.clone)(5)
 
