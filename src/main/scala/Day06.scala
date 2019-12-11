@@ -5,7 +5,7 @@ object Day06 {
   def main(args: Array[String]) {
 
     // Order orbits so that in any orbit (parent, child), parent is either "COM"
-    // either has its parent previously defined in the orbit list
+    // or has its parent previously defined in the orbit list
     def orderOrbits(orbits: List[(String, String)]): List[(String, String)] = {
 
       @tailrec
