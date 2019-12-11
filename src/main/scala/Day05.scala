@@ -1,6 +1,5 @@
 import scala.annotation.tailrec
 import scala.io.Source
-import scala.runtime.ScalaRunTime.stringOf
 
 object Day05 {
   def main(args: Array[String]) {
