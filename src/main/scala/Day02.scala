@@ -5,29 +5,10 @@ import scala.runtime.ScalaRunTime.stringOf
 object Day02 {
   def main(args: Array[String]) {
 
-    @tailrec
-    def runProgram(i: Int, a: Array[Int]): Array[Int] = {
-      def read4(i: Int): Boolean = {
-        a(i) match {
-          case 1 => a(a(i+3)) = a(a(i+1)) + a(a(i+2)); false
-          case 2 => a(a(i+3)) = a(a(i+1)) * a(a(i+2)); false
-          case 99 => true
-          case _ => throw new Exception("Should read instruction 1, 2 or 99")
-        }
-      }
-
-      if (read4(i)) a
-      else runProgram(i+4, a)
-    }
-
-    val source = Source.fromFile("src/main/resources/day02.txt")
-    val inputArray = source.getLines
-      .find(_ => true)
-      .getOrElse("99")
-      .split(",")
-      .map((s: String) => s.toInt)
-
-    val part1: Array[Int] = runProgram(0, inputArray.clone)
+    val mem: Map[BigInt, BigInt] = IntCodeMachine.load("src/main/resources/day02.txt")
+    val part1Init: IntCodeMachine = new IntCodeMachine(mem)
+    val part1End: IntCodeMachine = part1Init.run()
+    println(part1End.mem(0))
 
     implicit def t2rt(t: (Int, Int)) = new RangedTuple(t)
 
@@ -50,21 +31,15 @@ object Day02 {
 
     @tailrec
     def findInputs(l: LazyList[(Int, Int)]): (Int, Int) = {
-      inputArray.clone match {
-          case Array(a0, _, _, tail @ _*) =>
-            if (runProgram(0,
-                Array(a0, l.head._1, l.head._2) ++ tail
-              )(0) == 19690720
-            ) l.head
-            else findInputs(l.tail)
-      }
+      val initIter: IntCodeMachine = new IntCodeMachine(
+        mem + ((BigInt(1) -> l.head._1), (BigInt(2) -> l.head._2))
+      )
+      val endIter: IntCodeMachine = initIter.run()
+      if (endIter.mem(0).equals(BigInt(19690720))) l.head
+      else findInputs(l.tail)
     }
 
     val part2: (Int, Int) = findInputs((0, 0) to (99, 99))
-
-    source.close()
-
-    println(stringOf(part1))
     println(part2)
   }
 }
