@@ -14,6 +14,13 @@ object IntCodeMachine {
     source.close()
     mem
   }
+
+  def run(machine: IntCodeMachine): IntCodeMachine = {
+    machine.next() match {
+      case same if (same.equals(machine)) => machine
+      case nextMachine => run(nextMachine)
+    }
+  }
 }
 
 class IntCodeMachine(
@@ -35,12 +42,7 @@ class IntCodeMachine(
       case 2 => mem(value) + mem(-1)
     }
 
-  def run(): IntCodeMachine = {
-    this.next() match {
-      case same if (same.equals(this)) => this
-      case n => n.run()
-    }
-  }
+  def run(): IntCodeMachine = IntCodeMachine.run(this)
 
   def next(): IntCodeMachine = {
 
