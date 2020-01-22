@@ -23,7 +23,7 @@ object IntCodeMachine {
   }
 }
 
-class IntCodeMachine(
+case class IntCodeMachine(
                           val mem: Map[BigInt, BigInt],
                           val i: BigInt = 0,
                           val machineInput: Seq[BigInt] = Nil,
