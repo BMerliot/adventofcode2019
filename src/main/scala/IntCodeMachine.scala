@@ -1,4 +1,3 @@
-import scala.annotation.tailrec
 import scala.io.Source
 
 object IntCodeMachine {
@@ -23,7 +22,7 @@ object IntCodeMachine {
   }
 }
 
-case class IntCodeMachine(
+class IntCodeMachine(
                           val mem: Map[BigInt, BigInt],
                           val i: BigInt = 0,
                           val machineInput: Seq[BigInt] = Nil,
@@ -61,23 +60,24 @@ case class IntCodeMachine(
     }
   }
 
-  private def operator(f: (BigInt, BigInt) => BigInt): IntCodeMachine =
+  protected def operator(f: (BigInt, BigInt) => BigInt): IntCodeMachine =
     new IntCodeMachine(
       mem + (a -> f(mem(c), mem(b))), i+4, machineInput, machineOutput
     )
 
-  private def readInput(): IntCodeMachine =
+  protected def readInput(): IntCodeMachine =
     new IntCodeMachine(
       mem + (c -> machineInput.head), i+2, machineInput.tail, machineOutput
     )
 
-  private def writeOutput(): IntCodeMachine =
+  protected def writeOutput(): IntCodeMachine = {
     new IntCodeMachine(
       mem, i+2, machineInput, machineOutput :+ mem(c)
     )
+  }
 
 
-  private def jump(f: Boolean => Boolean): IntCodeMachine =
+  protected def jump(f: Boolean => Boolean): IntCodeMachine =
     new IntCodeMachine(
       mem,
       if (f(mem(c).equals(BigInt(0)))) mem(b) else i+3,
@@ -85,10 +85,19 @@ case class IntCodeMachine(
       machineOutput
     )
 
-  private def setRelativeBase(): IntCodeMachine =
+  protected def setRelativeBase(): IntCodeMachine =
     new IntCodeMachine(
       mem + (BigInt(-1) -> (mem(-1) + mem(c))), i+2, machineInput, machineOutput
     )
 
   private implicit def bool2bigint(b: Boolean): BigInt = if (b) 1 else 0
+
+  def copy(
+            mem: Map[BigInt, BigInt] = this.mem,
+            i: BigInt = this.i,
+            machineInput: Seq[BigInt] = this.machineInput,
+            machineOutput: Seq[BigInt] = this.machineOutput
+          ): IntCodeMachine = {
+    new IntCodeMachine(mem, i, machineInput, machineOutput)
+  }
 }
