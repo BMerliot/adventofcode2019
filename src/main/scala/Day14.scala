@@ -3,7 +3,7 @@ import scala.io.Source
 
 object Day14 {
 
-  def loadReactions(): Map[String, (Int, Map[String, Int])] = {
+  def loadReactions(): Map[String, (Long, Map[String, Long])] = {
 
     val source = Source.fromFile("src/main/resources/day14.txt")
 
@@ -16,12 +16,12 @@ object Day14 {
           .trim
           .split(" ")
         val productName: String = product.last
-        val productQuantity: Int = product.head.toInt
+        val productQuantity: Long = product.head.toLong
 
         val reactants: Seq[String] = splitProduct.head.split(",")
-        val reactantsMap: Map[String, Int] = reactants
+        val reactantsMap: Map[String, Long] = reactants
           .map(_.trim().split(" "))
-          .map{a: Array[String] => a.last -> a.head.toInt}
+          .map{a: Array[String] => a.last -> a.head.toLong}
           .toMap
 
         productName -> (productQuantity, reactantsMap)
@@ -32,7 +32,7 @@ object Day14 {
   }
 
   def sortProducts(
-                      reactions: Map[String, (Int, Map[String, Int])]
+                      reactions: Map[String, (Long, Map[String, Long])]
                     ): Seq[String] = {
 
     def isReactant(reactant: String, product: String): Boolean = {
@@ -60,14 +60,14 @@ object Day14 {
   }
 
   case class NanofactoryComputer(
-                             reactions: Map[String, (Int, Map[String, Int])],
+                             reactions: Map[String, (Long, Map[String, Long])],
                              productOrder: Seq[String]
                            ) {
 
     private def insert(
-                queue: Seq[(String, Int)],
-                product: (String, Int)
-              ): Seq[(String, Int)] = {
+                queue: Seq[(String, Long)],
+                product: (String, Long)
+              ): Seq[(String, Long)] = {
       queue match {
         case Nil => product :: Nil
         case _ => if (productOrder.indexOf(queue.head._1) > productOrder.indexOf(product._1))
@@ -78,14 +78,14 @@ object Day14 {
 
     @tailrec
     private def updateQueue(
-                     toProduce: Map[String, Int],
-                     queue: Seq[(String, Int)]
-                   ): Seq[(String, Int)] = {
+                     toProduce: Map[String, Long],
+                     queue: Seq[(String, Long)]
+                   ): Seq[(String, Long)] = {
       toProduce match {
         case m if m.isEmpty => queue
         case _ => {
-          val h: (String, Int) = toProduce.head
-          val t: Map[String, Int] = toProduce.tail
+          val h: (String, Long) = toProduce.head
+          val t: Map[String, Long] = toProduce.tail
           queue.indexWhere(_._1.equals(h._1)) match {
             case -1 =>
               updateQueue(t, insert(queue, h))
@@ -97,132 +97,43 @@ object Day14 {
     }
 
     @tailrec
-    private def howMuchOre(productionQueue: Seq[(String, Int)]): Int = {
+    private def howMuchOre(productionQueue: Seq[(String, Long)]): Long = {
 
       val (productName, productQuantity) = productionQueue.head
       reactions.get(productName) match {
         case None => productQuantity
-        case Some((produced: Int, reactants: Map[String, Int])) =>
-          val toProduce: Map[String, Int] = reactants.map{
-            case (k, v) => (k, v * math.ceil(1.0 * productQuantity / produced).toInt)
+        case Some((produced: Long, reactants: Map[String, Long])) =>
+          val toProduce: Map[String, Long] = reactants.map{
+            case (k, v) => (k, v * math.ceil(1.0 * productQuantity / produced).toLong)
           }
-          val updatedProductionQueue: Seq[(String, Int)] =
+          val updatedProductionQueue: Seq[(String, Long)] =
             updateQueue(toProduce, productionQueue.tail)
           howMuchOre(updatedProductionQueue)
       }
     }
 
-    def howMuchOre(fuelNeeded: Int = 1): Int =
+    def howMuchOre(fuelNeeded: Long = 1): Long =
       howMuchOre(("FUEL", fuelNeeded) :: Nil)
 
-    @tailrec
-    private def plan(
-                      productionQueue: Seq[(String, Int)],
-                      needs: Map[String, Int] = Map.empty,
-                      scraps: Map[String, Int] = Map.empty
-                    ): (Int, Map[String, Int], Map[String, Int]) = {
-
-      val (productName, productQuantity) = productionQueue.head
-      reactions.get(productName) match {
-        case None => (productQuantity, needs, scraps)
-        case Some((produced: Int, reactants: Map[String, Int])) => {
-
-          val toProduce: Map[String, Int] = reactants.map {
-            case (k, v) => (k, v * math.ceil(1.0 * productQuantity / produced).toInt)
-          }
-          val updatedProductionQueue: Seq[(String, Int)] =
-            updateQueue(toProduce, productionQueue.tail)
-
-          val newNeeds: Map[String, Int] =
-            toProduce.filterNot{case (name, _) => needs.contains(name)}
-          val updatedNeeds: Map[String, Int] = needs.map{
-            case (name, quantity) =>
-              if (toProduce.contains(name)) (name, quantity + toProduce(name))
-              else (name, quantity)
-          } ++ newNeeds
-
-          val scrap: Int = productQuantity % produced
-
-          if (scrap == 0)
-            plan(updatedProductionQueue, updatedNeeds, scraps)
-
-          else {
-
-            val updatedScraps: Map[String, Int] =
-              if (scraps.contains(productName))
-                scraps.updated(productName, scraps(productName) + scrap)
-              else
-                scraps.updated(productName, scrap)
-
-            plan(updatedProductionQueue, updatedNeeds, updatedScraps)
-          }
-        }
-      }
-    }
-
-    @tailrec
-    private def groupByReaction( // Actually grouped by reaction and merged if some reactions have common reactants
-                                 reactants: Seq[String],
-                                 result: Seq[Seq[String]] = Nil
-                               ): Seq[Seq[String]] = {
-      reactants match {
-        case Nil => result
-        case h :: t => {
-
-          val otherReactants: Seq[String] = reactions.map {
-            t => t._2._2.keys // take only the reactant names in each reaction
-          }
-            .filter(_.toSeq.contains(h)) // take only reactions containing h
-            .flatten.toSeq
-            .filter{ s => result.exists(_.contains(s)) } // take all reactants both in reactions with h and i result
-
-          val updatedResult: Seq[Seq[String]] = otherReactants match {
-            case Nil => (h :: Nil) +: result
-            case _ => result.groupBy {
-              g => g.exists(otherReactants.contains(_))
-            }.flatMap {
-              case (true, groups) => (h +: groups.flatten) :: Nil
-              case (false, groups) => groups
-            }.toSeq
-          }
-
-          groupByReaction(t, updatedResult)
-        }
+    def howMuchFuel(
+                     availableOre: Long,
+                     lowFuel: Long,
+                     highFuel: Long
+                   ): Long = {
+      val midFuel: Long = (lowFuel + highFuel) / 2
+      if (midFuel == lowFuel) lowFuel
+      else {
+          val oreNeeded: Long = howMuchOre(midFuel)
+          if (oreNeeded > availableOre)
+            howMuchFuel(availableOre, lowFuel, midFuel)
+          else
+            howMuchFuel(availableOre, midFuel, highFuel)
       }
     }
 
     def howMuchFuel(availableOre: Long): Long = {
-
-      val (oneFuelinOre: Int, needs: Map[String, Int], scraps: Map[String, Int]) =
-        plan(("FUEL", 1) :: Nil)
-
-      val groupedScraps: Seq[Map[String, Int]] = groupByReaction(scraps.keys.toSeq)
-        .map{
-          group => group.map{
-            name: String => name -> scraps(name)
-          }.toMap
-        }
-      println(groupedScraps.foreach(println))
-
-      val scrapsLcm: Long = groupedScraps.map{
-        _.values
-          .map(_.toLong)
-          .foldLeft(1L)(lcm)
-      }
-        .foldLeft(1L)(lcm)
-
-      val scrapLoops: Long = availableOre / (scrapsLcm * oneFuelinOre)
-      val fuelCreatedInLoop: Long = scrapLoops * scrapsLcm + 1
-      val remainingOre: Long = availableOre % (scrapsLcm * oneFuelinOre)
-
-      val (remainingFuel: Int, remainingNeeds: Map[String, Int], remainingScraps: Map[String, Int]) =
-        plan(("FUEL", (remainingOre / oneFuelinOre).toInt) :: Nil)
-
-      remainingScraps.toSeq.sortBy{t => productOrder.indexOf(t._1)}.foreach(println)
-      println()
-      println(String.format("remaining ORE : %d, remaining needs: %d ", remainingOre, remainingNeeds("ORE")))
-
-      fuelCreatedInLoop + remainingFuel
+      // Had to check someone else answer, did not think a simple dichotomy would be efficient enough
+      howMuchFuel(availableOre, availableOre / howMuchOre(), availableOre / howMuchOre() * 2)
     }
   }
 
@@ -236,12 +147,12 @@ object Day14 {
 
   def main(args: Array[String]): Unit = {
 
-    val reactions: Map[String, (Int, Map[String, Int])] = loadReactions()
+    val reactions: Map[String, (Long, Map[String, Long])] = loadReactions()
     val productOrder: Seq[String] = sortProducts(reactions)
     val nanofactoryComputer: NanofactoryComputer =
       NanofactoryComputer(reactions, productOrder)
 
-    val part1: Int = nanofactoryComputer.howMuchOre(1)
+    val part1: Long = nanofactoryComputer.howMuchOre(1)
     println(part1)
 
     val part2: Long = nanofactoryComputer.howMuchFuel(1000000000000L)
