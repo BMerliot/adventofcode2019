@@ -5,6 +5,16 @@ object Day15 {
   def flightDistance(t1: (Int, Int), t2: (Int, Int)): Int =
     math.abs(t1._1 - t2._1) + math.abs(t1._2 - t2._2)
 
+  object ExplorationRobot {
+
+    def positionToCommand(robotPosition: (Int, Int)): Map[(Int, Int), Int] = Map(
+      (robotPosition._1, robotPosition._2 + 1) -> 1,
+      (robotPosition._1, robotPosition._2 - 1) -> 2,
+      (robotPosition._1 + 1, robotPosition._2) -> 3,
+      (robotPosition._1 - 1, robotPosition._2) -> 4
+    )
+  }
+
   class ExplorationRobot(
                                override val mem: Map[BigInt, BigInt],
                                override val i: BigInt = 0,
@@ -18,12 +28,8 @@ object Day15 {
     lazy val robotPosition: (Int, Int) =
       envMap.filter(_._2.equals(3)).keys.head
 
-    lazy val positionToCommand: Map[(Int, Int), Int] = Map(
-      (robotPosition._1, robotPosition._2 + 1) -> 1,
-      (robotPosition._1, robotPosition._2 - 1) -> 2,
-      (robotPosition._1 + 1, robotPosition._2) -> 3,
-      (robotPosition._1 - 1, robotPosition._2) -> 4
-    )
+    lazy val positionToCommand: Map[(Int, Int), Int] =
+      ExplorationRobot.positionToCommand(robotPosition)
 
     override def next(): ExplorationRobot = {
       val nextMachine: IntCodeMachine = super.next()
@@ -156,6 +162,26 @@ object Day15 {
     def getEnvMap: Map[(Int, Int), Int] = envMap
   }
 
+  def dijkstra(
+                envMap: Map[(Int, Int), Int],
+                dijkstraMap: Map[(Int, Int), Int] = Map((0, 0) -> 0)
+              ): Map[(Int, Int), Int] = {
+
+    if (dijkstraMap.size == envMap.values.filterNot(_ == 0).size)
+      dijkstraMap
+    else {
+
+      val updatedDijkstraMap: Map[(Int, Int), Int] = dijkstraMap.flatMap{
+        case (coord, dist) => ExplorationRobot.positionToCommand(coord)
+          .keys
+          .filter(envMap.getOrElse(_, 0) != 0)
+          .map((_, dist + 1))
+      } ++ dijkstraMap
+
+      dijkstra(envMap, updatedDijkstraMap)
+    }
+  }
+
   def prettyPrint(envMap: Map[(Int, Int), Int]): Unit = {
 
     val maxX: Int = envMap.foldLeft(0){(acc, v) => math.max(acc, v._1._1.toInt)}
@@ -187,11 +213,18 @@ object Day15 {
 
     prettyPrint(exploredEnvironment)
 
-    val shortestPathToOxygen: Seq[(Int, Int)] = endRobot.breadthFirst(
-      t => t._1 == (0, 0),
-      startPosition = exploredEnvironment.filter(_._2 == 2).keys.head
-    )
-    val part2: Int = shortestPathToOxygen.size
+    val dijkstraMap: Map[(Int, Int), Int] = dijkstra(exploredEnvironment)
+    val oxygenCoord: (Int, Int) =
+      exploredEnvironment.filter(_._2 == 2).keys.head
+    val part1: Int = dijkstraMap.filter{
+      t => t._1 == oxygenCoord
+    }.values.head
+
+    println(part1)
+
+    val part2: Int = dijkstra(exploredEnvironment, Map(oxygenCoord -> 0))
+      .values.max
+
     println(part2)
   }
 }
