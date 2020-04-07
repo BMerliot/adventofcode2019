@@ -59,13 +59,13 @@ object Day13 {
   }
 
   class ArcadeCabinet(
-                            override val mem: Map[BigInt, BigInt],
-                            override val i: BigInt = 0,
-                            override val machineInput: Seq[BigInt] = Nil,
-                            override val machineOutput: Seq[BigInt] = Nil,
-                            val xBall: BigInt = 0,
-                            val xPaddle: BigInt = 0
-                          )
+                       override val mem: Map[BigInt, BigInt],
+                       override val i: BigInt = 0,
+                       override val machineInput: Seq[BigInt] = Nil,
+                       override val machineOutput: Seq[BigInt] = Nil,
+                       val xBall: BigInt = 0,
+                       val xPaddle: BigInt = 0
+                     )
     extends IntCodeMachine(mem, i, machineInput, machineOutput) {
 
     override def run(): ArcadeCabinet = runRec()
