@@ -1,3 +1,5 @@
+package days
+
 import scala.annotation.tailrec
 
 object Day12 {
@@ -55,10 +57,9 @@ object Day12 {
 
       val updatedMoons: List[Moon] = moons.zip(changes)
         .map {
-          case (moon: Moon, change: List[Long]) => {
+          case (moon: Moon, change: List[Long]) =>
             val old: Dimension = moon.get(dim)
             moon.update(dim, Dimension(old.position, old.velocity + change.sum))
-          }
         }
 
       System(updatedMoons)
@@ -96,6 +97,7 @@ object Day12 {
     }
   }
 
+  @scala.annotation.tailrec
   def gcd(a: Long, b: Long): Long = {
     if (b == 0) a
     else gcd(b, a % b)
@@ -103,7 +105,7 @@ object Day12 {
 
   def lcm(a: Long, b: Long): Long = Math.abs((a / gcd(a, b)) * b)
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
 
     val problemInput: System = System(
       Moon(Dimension(14, 0) :: Dimension(2, 0) :: Dimension(8, 0) :: Nil) ::

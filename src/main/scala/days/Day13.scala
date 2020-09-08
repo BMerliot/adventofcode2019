@@ -1,3 +1,7 @@
+package days
+
+import utils.IntCodeMachine
+
 import scala.annotation.tailrec
 
 object Day13 {
@@ -12,6 +16,7 @@ object Day13 {
       read(formatedOutput, Array.fill[Int](ySize, xSize)(0))
     }
 
+    @scala.annotation.tailrec
     private def read(
                       formatedOutput: Seq[(Int, Int, Int)],
                       result: Array[Array[Int]]
@@ -76,10 +81,9 @@ object Day13 {
         case x :: y :: v :: Nil => v.toInt match {
           case 3 => new ArcadeCabinet(mem, i, machineInput, Nil, xBall, x)
           case 4 => new ArcadeCabinet(mem, i, machineInput, Nil, x, xPaddle)
-          case _ => {
+          case _ =>
             if (x == -1 && y == 0) println(v)
             new ArcadeCabinet(mem, i, machineInput, Nil, xBall, xPaddle)
-          }
         }
         case _ => if (mem(i) == 99) this
         else next()
@@ -102,11 +106,10 @@ object Day13 {
 
     override protected def readInput(): ArcadeCabinet = {
       machineInput match {
-        case Nil => {
+        case Nil =>
           new ArcadeCabinet(
             mem + (c -> nextCommand()), i+2, Nil, machineOutput
           )
-        }
         case _ => new ArcadeCabinet(
           mem + (c -> machineInput.head), i+2, machineInput.tail, machineOutput
         )
@@ -139,6 +142,6 @@ object Day13 {
     println("\nPart 2 scores, read last score to get the answer :")
     val part2Mem: Map[BigInt, BigInt] = mem.updated(0, 2)
     val part2Init: ArcadeCabinet = new ArcadeCabinet(part2Mem)
-    val part2End: IntCodeMachine = part2Init.run()
+    part2Init.run()
   }
 }

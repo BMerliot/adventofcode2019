@@ -1,3 +1,5 @@
+package days
+
 import scala.io.Source
 
 object Day16 {

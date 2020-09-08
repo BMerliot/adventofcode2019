@@ -1,3 +1,7 @@
+package days
+
+import utils.IntCodeMachine
+
 import scala.annotation.tailrec
 
 object Day15 {
@@ -123,7 +127,7 @@ object Day15 {
     final def explore(): ExplorationRobot = {
 
       machineOutput match {
-        case Nil => {
+        case Nil =>
           val nextMove: Int = chooseNextMove()
           new ExplorationRobot(
             mem, i, nextMove :: Nil, Nil, envMap, nextMove
@@ -132,8 +136,7 @@ object Day15 {
             .next()
             .runUntilInput()
             .explore()
-        }
-        case h :: t => {
+        case h :: _ =>
 
           val locationToUpdate: (Int, Int) = positionToCommand.map{
             case (k, v) => (v, k)
@@ -155,13 +158,13 @@ object Day15 {
             case 2 => updatedExplorationRobot
             case _ => updatedExplorationRobot.explore()
           }
-        }
       }
     }
 
     def getEnvMap: Map[(Int, Int), Int] = envMap
   }
 
+  @scala.annotation.tailrec
   def dijkstra(
                 envMap: Map[(Int, Int), Int],
                 dijkstraMap: Map[(Int, Int), Int] = Map((0, 0) -> 0)

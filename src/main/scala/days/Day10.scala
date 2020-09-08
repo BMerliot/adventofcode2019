@@ -1,7 +1,10 @@
+package days
+
 import scala.io.Source
 
 object Day10 {
 
+  @scala.annotation.tailrec
   def gcd(x: Int, y: Int): Int = if (y == 0) x else gcd(y, x % y)
 
   class Asteroid(
@@ -22,8 +25,8 @@ object Day10 {
     def angle(): Double = {
       math.floor(
         {
-          val a: Double = if (y == 0) 0 else math.abs(x * 1.0 / y);
-          val a_norm: Double = a / math.sqrt(a * a + 1);
+          val a: Double = if (y == 0) 0 else math.abs(x * 1.0 / y)
+          val a_norm: Double = a / math.sqrt(a * a + 1)
           (x, y) match {
             case (_, 0) => if (x >= 0) math.Pi / 2 else 3 * math.Pi / 2
             case (0, _) => if (y >= 0) math.Pi else 0
@@ -57,10 +60,10 @@ object Day10 {
     def countDetected(observer: Asteroid): Int = {
       asteroids
         .filter{
-          case same if (same == observer) => false
+          case same if same == observer => false
           case default => true
         }
-        .map {case a: Asteroid => {
+        .map {a: Asteroid => {
           // Computing slope between each asteroid and the station
           val num: Int = a.y - observer.y
           val den: Int = a.x - observer.x
@@ -78,7 +81,8 @@ object Day10 {
             else math.abs(g)
           }
           (num / norm, den / norm)
-        }}.toSet.size
+        }
+        }.toSet.size
     }
 
     val detectedAsteroids: List[(Asteroid, Int)] = asteroids
@@ -101,7 +105,7 @@ object Day10 {
     val asteroidsBySlope: List[List[Asteroid]] =
       asteroids
         .filter{
-          case same if (same == station) => false
+          case same if same == station => false
           case default => true
         }
         .map{ _.rebase(station) }

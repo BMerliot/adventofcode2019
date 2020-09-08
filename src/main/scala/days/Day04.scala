@@ -1,3 +1,5 @@
+package days
+
 import scala.annotation.tailrec
 
 object Day04 {
@@ -8,19 +10,18 @@ object Day04 {
 
       @tailrec
       def isValidRec(n: Int, doubleEncountered: Boolean): Boolean = {
-        val a = n / 10;
-        val b = n % 10;
+        val a = n / 10
+        val b = n % 10
         a match {
           case 0 => doubleEncountered
-          case _ => {
-            val c = a % 10;
-            if (c == b) isValidRec(a, true)
+          case _ =>
+            val c = a % 10
+            if (c == b) isValidRec(a, doubleEncountered = true)
             else (c < b) && isValidRec(a, doubleEncountered)
-          }
         }
       }
 
-      isValidRec(n, false)
+      isValidRec(n, doubleEncountered = false)
     }
 
     val part1 = (264360 to 746325).count((n: Int) => isValid1(n))

@@ -1,3 +1,5 @@
+package days
+
 import scala.annotation.tailrec
 import scala.io.Source
 
@@ -48,10 +50,9 @@ object Day14 {
     def insert(sortedNames: Seq[String], product: String): Seq[String] = {
       sortedNames.indexWhere(isReactant(_, product)) match {
         case -1 => sortedNames :+ product
-        case i => {
+        case i =>
           val (front, back) = sortedNames.splitAt(i)
           front ++ List(product) ++ back
-        }
       }
     }
 
@@ -83,7 +84,7 @@ object Day14 {
                    ): Seq[(String, Long)] = {
       toProduce match {
         case m if m.isEmpty => queue
-        case _ => {
+        case _ =>
           val h: (String, Long) = toProduce.head
           val t: Map[String, Long] = toProduce.tail
           queue.indexWhere(_._1.equals(h._1)) match {
@@ -92,7 +93,6 @@ object Day14 {
             case i =>
               updateQueue(t, queue.updated(i, (h._1, queue(i)._2 + h._2)))
           }
-        }
       }
     }
 
@@ -137,6 +137,7 @@ object Day14 {
     }
   }
 
+  @scala.annotation.tailrec
   def gcd(a: Long, b: Long): Long = {
     if (a == 0) b
     else if (b == 0) a
@@ -152,7 +153,7 @@ object Day14 {
     val nanofactoryComputer: NanofactoryComputer =
       NanofactoryComputer(reactions, productOrder)
 
-    val part1: Long = nanofactoryComputer.howMuchOre(1)
+    val part1: Long = nanofactoryComputer.howMuchOre()
     println(part1)
 
     val part2: Long = nanofactoryComputer.howMuchFuel(1000000000000L)

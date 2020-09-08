@@ -1,4 +1,6 @@
-import scala.language.implicitConversions
+package days
+
+import utils.IntCodeMachine
 
 object Day11 {
 
@@ -33,6 +35,7 @@ object Day11 {
 
   def main(args: Array[String]) {
 
+    @scala.annotation.tailrec
     def runRobot(
                   coord: (Int, Int),
                   direction: Direction.Val,
@@ -42,8 +45,8 @@ object Day11 {
 
       intCodeMachine.machineOutput match {
 
-        case out1 :: out2 :: outTail => {
-          val paintedPanel = Panel(coord._1, coord._2, out1, true)
+        case out1 :: out2 :: outTail =>
+          val paintedPanel = Panel(coord._1, coord._2, out1, painted = true)
           val nextPanels: Map[(Int, Int), Panel] = panels + (coord -> paintedPanel)
           val nextDirection: Direction.Val = out2.toInt match {
             case 0 => direction.turnCounterclockwise()
@@ -63,14 +66,12 @@ object Day11 {
               machineOutput = outTail
             )
           )
-        }
 
-        case _ => {
+        case _ =>
           intCodeMachine.next() match {
-            case same if (same.equals(intCodeMachine)) => panels
+            case same if same.equals(intCodeMachine) => panels
             case nextMachine => runRobot(coord, direction, panels, nextMachine)
           }
-        }
       }
     }
 

@@ -1,3 +1,7 @@
+package days
+
+import utils.IntCodeMachine
+
 object Day07 {
   def main(args: Array[String]) {
 
@@ -9,7 +13,7 @@ object Day07 {
         if (remainingSwaps == 0) l :: Nil
         else l match {
           case h :: t =>
-            combinations(t, t.size - 1).map((a: List[BigInt]) => h :: a).toList :::
+            combinations(t, t.size - 1).map((a: List[BigInt]) => h :: a) :::
             combinations(t :+ h, remainingSwaps - 1)
           case _ => Nil
         }
@@ -18,10 +22,11 @@ object Day07 {
       combinations((n to m).toList, m - n -1)
     }
 
+    @scala.annotation.tailrec
     def chainRunProgram(l: List[BigInt], inputInt: BigInt): BigInt = {
       l match {
         case h :: t =>
-          var machineInput: List[BigInt] = h :: inputInt :: Nil;
+          val machineInput: List[BigInt] = h :: inputInt :: Nil
           val chainInit: IntCodeMachine = new IntCodeMachine(mem, machineInput = machineInput)
           val chainEnd: IntCodeMachine = chainInit.run()
           chainRunProgram(t, chainEnd.machineOutput.head)
@@ -29,6 +34,7 @@ object Day07 {
       }
     }
 
+    @scala.annotation.tailrec
     def loopRunProgram(
                         machines: List[IntCodeMachine],
                         lastOutput: BigInt
@@ -38,7 +44,7 @@ object Day07 {
         case currentMachine :: _ =>
           currentMachine.machineOutput match {
             case Nil => currentMachine.next() match {
-              case same if (same.equals(currentMachine)) => loopRunProgram(
+              case same if same.equals(currentMachine) => loopRunProgram(
                 machines.tail,
                 lastOutput
               )
@@ -48,8 +54,8 @@ object Day07 {
               )
             }
             case newOutput :: remainingOutputs =>
-              val nextMachine: IntCodeMachine = machines.tail.head;
-              val otherMachines: List[IntCodeMachine] = machines.tail.tail;
+              val nextMachine: IntCodeMachine = machines.tail.head
+              val otherMachines: List[IntCodeMachine] = machines.tail.tail
               loopRunProgram(
                 (new IntCodeMachine(
                   nextMachine.mem,
