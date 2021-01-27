@@ -5,7 +5,7 @@ import utils.Grid
 import scala.annotation.tailrec
 import scala.io.Source
 
-object Day18 {
+object Day18_v1 {
 
   case class Door(name: Char) {
     def key: Key = Key(name.toLower)
