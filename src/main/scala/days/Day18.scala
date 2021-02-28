@@ -1,9 +1,8 @@
 package days
 
 import utils.{Grid, LazyGraph, Node}
+import utils.TimeUtils.printElapsedTime
 
-import java.text.SimpleDateFormat
-import scala.collection.mutable
 import scala.io.Source
 
 object Day18 {
@@ -50,7 +49,7 @@ case class Location(coord: (Int, Int), keys: Set[Char])(implicit
 
 class ExplorationGraph(implicit grid: Grid[Char]) extends LazyGraph[Location] {
   override val isDebug: Boolean = false
-  println(new SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis()))
+  val startTimestamp: Long = System.currentTimeMillis()
 
   var stepCount: Int = 0
 
@@ -68,9 +67,7 @@ class ExplorationGraph(implicit grid: Grid[Char]) extends LazyGraph[Location] {
     stepCount += 1
     if (stepCount % 10 == 0) {
       println(f"$stepCount - ${locations.size}")
-      println(
-        new SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis())
-      )
+      printElapsedTime(startTimestamp)
     }
 //    grid.prettyPrint()
     stepCount < 140 &&
@@ -80,18 +77,24 @@ class ExplorationGraph(implicit grid: Grid[Char]) extends LazyGraph[Location] {
   override def mergePrevious(
       currLocations: Set[Location],
       exploredLocations: Set[Location]
-  ): Set[Location] =
-    (currLocations ++ exploredLocations)
+  ): Set[Location] = {
+    val exploredKeysByCoord: Map[(Int, Int), Set[Set[Char]]] = exploredLocations
+      .groupBy(_.coord)
+      .map { case (coord, locations) => coord -> locations.map(_.keys) }
+
+    currLocations
       .groupBy(_.coord)
       .flatMap {
         case (coord, set) =>
           set
             .map(_.keys)
-            .foldLeft(Set[Set[Char]]()) { (acc, first) =>
-              if (acc.exists(second => first.diff(second).isEmpty)) acc
-              else acc + first
+            .foldLeft(exploredKeysByCoord.getOrElse(coord, Set[Set[Char]]())) {
+              (acc: Set[Set[Char]], first: Set[Char]) =>
+                if (acc.exists(second => first.diff(second).isEmpty)) acc
+                else acc.filterNot(second => second.diff(first).isEmpty) + first
             }
             .map(Location(coord, _))
       }
       .toSet
+  }
 }
